@@ -3,7 +3,6 @@ package pool
 import (
 	"log"
 	"math/rand"
-	"sync"
 	"time"
 )
 
@@ -31,15 +30,11 @@ type Pool chan *Resource
 //New : кладём в пул ресурсы
 func New(size int) Pool {
 	p := make(Pool, size)
-	wg := new(sync.WaitGroup)
-	wg.Add(size)
 	for i := 0; i < size; i++ {
 		go func(resId int) {
 			p <- NewResource(resId)
-			wg.Done()
 		}(i)
 	}
-	wg.Wait()
 	return p
 }
 

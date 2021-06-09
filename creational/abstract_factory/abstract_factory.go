@@ -17,9 +17,11 @@ type ModernRoof struct{}
 
 func (m ModernRoof) ResistRain() {}
 
+
 type ModernWalls struct{}
 
 func (m ModernWalls) ResistWind() {}
+
 
 type ModernHouseFactory struct {}
 
@@ -31,3 +33,6 @@ func (m ModernHouseFactory) MakeRoof() Roof {
 	return ModernRoof{}
 }
 
+func main() {
+	// todo
+}

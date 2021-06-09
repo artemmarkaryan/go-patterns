@@ -11,7 +11,7 @@ type ProdDB struct {
 }
 
 func (p ProdDB) GetData() string {
-	return p.data
+	return p.data // slow
 }
 
 type ProdDBProxy struct {
@@ -20,7 +20,7 @@ type ProdDBProxy struct {
 	cache string
 }
 
-func (p ProdDBProxy) GetData() string {
+func (p ProdDBProxy) GetData() string { // fast
 	if time.Now().Sub(p.cachedAt) > time.Second {
 		p.cache = p.db.GetData()
 		p.cachedAt = time.Now()

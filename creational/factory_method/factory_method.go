@@ -15,6 +15,7 @@ func (m ModernHouse) AddHabitats() {}
 
 func (m ModernHouse) RemoveHabitats() {}
 
+
 type ModernHouseCreator struct{}
 
 func (m ModernHouseCreator) Create() House {

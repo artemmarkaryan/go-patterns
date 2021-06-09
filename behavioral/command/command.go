@@ -1,41 +1,63 @@
-package command
+package main
 
-type Command interface {
-	Execute() string
-}
+import "log"
 
-type ToggleOnCommand struct {
-	receiver *Receiver
-}
+type Computer struct{}
 
-func (c *ToggleOnCommand) Execute() string {
-	return c.receiver.ToggleOn()
-}
-
-type ToggleOffCommand struct {
-	receiver *Receiver
-}
-
-func (c *ToggleOffCommand) Execute() string {
-	return c.receiver.ToggleOff()
-}
-
-type Receiver struct{}
-
-func (r *Receiver) ToggleOn() string {
+func (r *Computer) ToggleOn() string {
 	return "Toggle On"
 }
 
-func (r *Receiver) ToggleOff() string {
+func (r *Computer) ToggleOff() string {
 	return "Toggle Off"
 }
 
+type Command interface {
+	/*
+		Вынесем исполнение команд компутера в отдельный интерфейс,
+		чтобы их можно было удобно хранить и вызывать
+	*/
+	Execute() string
+	Unexecute() string
+}
+
+// ToggleOnCommand — команда включения компутера
+type ToggleOnCommand struct {
+	receiver *Computer
+}
+
+func (c ToggleOnCommand) Execute() string {
+	return c.receiver.ToggleOn()
+}
+func (c ToggleOnCommand) Unexecute() string {
+	return c.receiver.ToggleOff()
+}
+
+// ToggleOffCommand — команда выключения компутера
+type ToggleOffCommand struct {
+	receiver *Computer
+}
+
+func (c ToggleOffCommand) Execute() string {
+	return c.receiver.ToggleOff()
+}
+func (c ToggleOffCommand) Unexecute() string {
+	return c.receiver.ToggleOn()
+}
+
+type InvokerCommand struct {
+	command  Command
+	executed bool
+}
+
 type Invoker struct {
-	commands []Command
+	// Инвокер хранит и выполняет команды
+	index    int
+	commands []InvokerCommand
 }
 
 func (i *Invoker) StoreCommand(command Command) {
-	i.commands = append(i.commands, command)
+	i.commands = append(i.commands, InvokerCommand{command, false})
 }
 
 func (i *Invoker) UnStoreCommand() {
@@ -44,10 +66,30 @@ func (i *Invoker) UnStoreCommand() {
 	}
 }
 
-func (i *Invoker) Execute() string {
-	var result string
-	for _, command := range i.commands {
-		result += command.Execute() + "\n"
-	}
-	return result
+func (i *Invoker) ExecuteOne() string {
+	defer func() { i.index ++ }()
+	i.commands[i.index].executed = true
+	return i.commands[i.index].command.Execute()
+}
+
+func (i *Invoker) UndoOne() string {
+	i.index--
+	i.commands[i.index].executed = false
+	return i.commands[i.index].command.Unexecute()
+}
+
+func main() {
+	computer := Computer{}
+	invoker := Invoker{}
+	invoker.StoreCommand(ToggleOnCommand{&computer})
+	invoker.StoreCommand(ToggleOnCommand{&computer})
+	invoker.StoreCommand(ToggleOnCommand{&computer})
+
+	log.Print(invoker.commands)
+	log.Print(invoker.ExecuteOne())
+	log.Print(invoker.ExecuteOne())
+	log.Print(invoker.commands)
+	log.Print(invoker.UndoOne())
+	log.Print(invoker.commands)
+
 }
